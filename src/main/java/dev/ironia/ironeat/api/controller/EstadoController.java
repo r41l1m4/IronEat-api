@@ -1,12 +1,12 @@
 package dev.ironia.ironeat.api.controller;
 
+import dev.ironia.ironeat.domain.exception.EntidadeEmUsoException;
 import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
 import dev.ironia.ironeat.domain.model.Estado;
 import dev.ironia.ironeat.domain.repository.EstadoRepository;
 import dev.ironia.ironeat.domain.service.CadastroEstadoService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +61,9 @@ public class EstadoController {
             return ResponseEntity.noContent().build();
         }catch (EntidadeNaoEncontradaException e) {
             return ResponseEntity.notFound().build();
+        }catch (EntidadeEmUsoException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(e.getMessage());
         }
     }
 }

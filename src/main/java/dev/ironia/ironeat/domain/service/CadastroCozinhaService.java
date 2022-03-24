@@ -28,13 +28,6 @@ public class CadastroCozinhaService {
                     )
             );
         }
-        catch (DataIntegrityViolationException e) {
-            throw new EntidadeEmUsoException(
-                    String.format("Cozinha de código %d não pode ser removida, pois está em uso",
-                            id
-                    )
-            );
-        }
     }
 
 }
