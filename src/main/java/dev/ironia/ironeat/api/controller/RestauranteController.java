@@ -1,5 +1,6 @@
 package dev.ironia.ironeat.api.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
 import dev.ironia.ironeat.domain.model.Restaurante;
 import dev.ironia.ironeat.domain.repository.RestauranteRepository;
@@ -9,9 +10,12 @@ import org.apache.catalina.connector.Response;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @RestController
@@ -62,5 +66,32 @@ public class RestauranteController {
             return ResponseEntity.badRequest()
                     .body(e.getMessage());
         }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> campos) {
+        Restaurante restauranteAtual = restauranteRepository.porId(id);
+
+        if(restauranteAtual == null) {
+            return ResponseEntity.notFound().build();
+        }
+        merge(campos, restauranteAtual);
+        return atualizar(id, restauranteAtual);
+    }
+
+    private void merge(Map<String, Object> camposOrigem, Restaurante restauranteDestino) {
+        ObjectMapper mapper = new ObjectMapper();
+        Restaurante restauranteOrigem = mapper.convertValue(camposOrigem, Restaurante.class);
+
+        camposOrigem.forEach((nomePropriedade, valorPropriedade) -> {
+            Field field = ReflectionUtils.findField(Restaurante.class, nomePropriedade);
+            field.setAccessible(true);
+
+            Object novoValor = ReflectionUtils.getField(field, restauranteOrigem);
+
+            System.out.println(nomePropriedade + " = " + valorPropriedade);
+
+            ReflectionUtils.setField(field, restauranteDestino, novoValor);
+        });
     }
 }

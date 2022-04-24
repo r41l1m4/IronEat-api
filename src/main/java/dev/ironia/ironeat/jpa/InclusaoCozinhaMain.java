@@ -21,7 +21,7 @@ public class InclusaoCozinhaMain {
         Cozinha cozinha2 = new Cozinha();
         cozinha2.setNome("Israelita");
 
-        cozinhas.adicionar(cozinha1);
-        cozinhas.adicionar(cozinha2);
+        cozinhas.save(cozinha1);
+        cozinhas.save(cozinha2);
     }
 }
