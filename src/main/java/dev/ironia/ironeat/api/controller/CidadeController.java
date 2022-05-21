@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -23,15 +24,15 @@ public class CidadeController {
 
     @GetMapping
     public List<Cidade> listar() {
-        return cidadeRepository.todas();
+        return cidadeRepository.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Cidade> buscar(@PathVariable Long id) {
-        Cidade cidade = cidadeRepository.porId(id);
+        Optional<Cidade> cidade = cidadeRepository.findById(id);
 
-        if(cidade != null) {
-            return ResponseEntity.ok(cidade);
+        if(cidade.isPresent()) {
+            return ResponseEntity.ok(cidade.get());
         }
         return ResponseEntity.notFound().build();
     }
@@ -51,16 +52,16 @@ public class CidadeController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody Cidade cidade) {
-        Cidade cidadeAtual = cidadeRepository.porId(id);
+        Optional<Cidade> cidadeAtual = cidadeRepository.findById(id);
 
-        if(cidadeAtual == null) {
+        if(cidadeAtual.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         try {
-            BeanUtils.copyProperties(cidade, cidadeAtual, "id");
-            cadastroCidadeService.salvar(cidadeAtual);
-            return ResponseEntity.ok(cidadeAtual);
+            BeanUtils.copyProperties(cidade, cidadeAtual.get(), "id");
+            cadastroCidadeService.salvar(cidadeAtual.get());
+            return ResponseEntity.ok(cidadeAtual.get());
         }catch (EntidadeNaoEncontradaException e) {
             return ResponseEntity.badRequest()
                     .body(e.getMessage());
@@ -74,7 +75,8 @@ public class CidadeController {
             cadastroCidadeService.excluir(id);
             return ResponseEntity.noContent().build();
         }catch (EntidadeNaoEncontradaException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
         }
     }
 }

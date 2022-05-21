@@ -6,6 +6,7 @@ import dev.ironia.ironeat.domain.model.Estado;
 import dev.ironia.ironeat.domain.repository.EstadoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
@@ -14,13 +15,20 @@ public class CadastroEstadoService {
     private EstadoRepository estadoRepository;
 
     public Estado salvar(Estado estado) {
-        return estadoRepository.adicionar(estado);
+        return estadoRepository.save(estado);
     }
 
     public void excluir(Long id) {
         try {
-            estadoRepository.remover(id);
+            estadoRepository.deleteById(id);
         }catch (IllegalArgumentException e) {
+            throw new EntidadeNaoEncontradaException(
+                    String.format(
+                            "Não existe um cadastro de estado com o código %d.",
+                            id
+                    )
+            );
+        }catch (EmptyResultDataAccessException e) {
             throw new EntidadeNaoEncontradaException(
                     String.format(
                             "Não existe um cadastro de estado com o código %d.",

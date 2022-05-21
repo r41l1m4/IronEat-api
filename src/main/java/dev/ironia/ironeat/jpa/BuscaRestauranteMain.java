@@ -7,6 +7,8 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Optional;
+
 public class BuscaRestauranteMain {
     public static void main(String[] args) {
         ApplicationContext applicationContext = new SpringApplicationBuilder(IronEatApiApplication.class)
@@ -15,8 +17,8 @@ public class BuscaRestauranteMain {
 
         RestauranteRepository restaurantes = applicationContext.getBean(RestauranteRepository.class);
 
-        Restaurante restaurante = restaurantes.porId(3L);
+        Optional<Restaurante> restaurante = restaurantes.findById(3L);
 
-        System.out.println(restaurante.getNome());
+        System.out.println(restaurante.get().getNome());
     }
 }

@@ -22,6 +22,6 @@ public class AlteracaoRestauranteMain {
         restaurante.setNome("Fim do Universo 2");
         restaurante.setTaxaFrete(BigDecimal.valueOf(174.72));
 
-        restaurantes.adicionar(restaurante);
+        restaurantes.save(restaurante);
     }
 }

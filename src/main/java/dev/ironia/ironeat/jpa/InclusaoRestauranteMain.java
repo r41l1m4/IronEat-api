@@ -25,7 +25,7 @@ public class InclusaoRestauranteMain {
         restaurante2.setNome("La Casa de Pastel");
         restaurante2.setTaxaFrete(BigDecimal.valueOf(8.49));
 
-        restaurantes.adicionar(restaurante1);
-        restaurantes.adicionar(restaurante2);
+        restaurantes.save(restaurante1);
+        restaurantes.save(restaurante2);
     }
 }
