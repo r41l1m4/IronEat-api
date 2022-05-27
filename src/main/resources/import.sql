@@ -19,3 +19,5 @@ insert into forma_pagamento (descricao) values ('Dinheiro');
 
 insert into permissao (nome, descricao) values ('Pode fazer X', 'pode fazer X detalhado');
 insert into permissao (nome, descricao) values ('Pode fazer Y', 'pode fazer Y detalhado');
+
+insert into restaurante_forma_pagamento (restaurante_id, forma_pagamento_id) values (1, 1), (1, 2), (2, 1), (3, 2);

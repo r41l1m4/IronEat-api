@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @JsonRootName("cozinha")
 @Data
@@ -22,4 +24,8 @@ public class Cozinha {
     //@JsonProperty(value = "titulo")
     @Column(nullable = false)
     private String nome;
+
+    @JsonIgnore // faz com que o jackson não serialize esse atributo no json
+    @OneToMany(mappedBy = "cozinha")
+    private List<Restaurante> restaurantes = new ArrayList<>();
 }
