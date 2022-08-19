@@ -23,21 +23,14 @@ public class CadastroEstadoService {
     public void excluir(Long id) {
         try {
             estadoRepository.deleteById(id);
-        }catch (IllegalArgumentException e) {
+        }catch (IllegalArgumentException | EmptyResultDataAccessException e) {
             throw new EntidadeNaoEncontradaException(
                     String.format(
                             MSG_ESTADO_NAO_ENCONTRADO,
                             id
                     )
             );
-        }catch (EmptyResultDataAccessException e) {
-            throw new EntidadeNaoEncontradaException(
-                    String.format(
-                            MSG_ESTADO_NAO_ENCONTRADO,
-                            id
-                    )
-            );
-        }catch (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException e) {
             throw new EntidadeEmUsoException(
                     String.format(MSG_ESTADO_EM_USO,
                             id
