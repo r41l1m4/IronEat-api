@@ -1,21 +1,18 @@
 package dev.ironia.ironeat.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
 import dev.ironia.ironeat.domain.model.Restaurante;
 import dev.ironia.ironeat.domain.repository.RestauranteRepository;
 import dev.ironia.ironeat.domain.service.CadastroRestauranteService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -30,54 +27,31 @@ public class RestauranteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Restaurante> buscar(@PathVariable Long id) {
-        Optional<Restaurante> restaurante = restauranteRepository.findById(id);
-
-        if(restaurante.isPresent()) {
-            return ResponseEntity.ok(restaurante.get());
-        }
-        return ResponseEntity.notFound().build();
+    public Restaurante buscar(@PathVariable Long id) {
+        return cadastroRestauranteService.buscarOuFalhar(id);
     }
 
     @PostMapping
-    public ResponseEntity<?> salvar(@RequestBody Restaurante restaurante) {
-        try{
-            restaurante = cadastroRestauranteService.salvar(restaurante);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(restaurante);
-        }catch (EntidadeNaoEncontradaException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    @ResponseStatus(HttpStatus.CREATED)
+    public Restaurante salvar(@RequestBody Restaurante restaurante) {
+        return cadastroRestauranteService.salvar(restaurante);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody Restaurante restaurante) {
-        Optional<Restaurante> restauranteAtual = restauranteRepository.findById(id);
+    public Restaurante atualizar(@PathVariable Long id, @RequestBody Restaurante restaurante) {
+        Restaurante restauranteAtual = cadastroRestauranteService.buscarOuFalhar(id);
 
-        if(restauranteAtual.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        try{
-            BeanUtils.copyProperties(restaurante, restauranteAtual.get(),
+        BeanUtils.copyProperties(restaurante, restauranteAtual,
                     "id", "formasPagamento", "endereco", "dataCadastro");
-            cadastroRestauranteService.salvar(restauranteAtual.get());
-            return ResponseEntity.ok(restauranteAtual.get());
-        }catch (EntidadeNaoEncontradaException e) {
-            return ResponseEntity.badRequest()
-                    .body(e.getMessage());
-        }
+        return cadastroRestauranteService.salvar(restauranteAtual);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> campos) {
-        Optional<Restaurante> restauranteAtual = restauranteRepository.findById(id);
+    public Restaurante atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> campos) {
+        Restaurante restauranteAtual = cadastroRestauranteService.buscarOuFalhar(id);
 
-        if(restauranteAtual.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        merge(campos, restauranteAtual.get());
-        return atualizar(id, restauranteAtual.get());
+        merge(campos, restauranteAtual);
+        return atualizar(id, restauranteAtual);
     }
 
     private void merge(Map<String, Object> camposOrigem, Restaurante restauranteDestino) {
@@ -94,5 +68,11 @@ public class RestauranteController {
 
             ReflectionUtils.setField(field, restauranteDestino, novoValor);
         });
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    private void remover(@PathVariable Long id) {
+        cadastroRestauranteService.excluir(id);
     }
 }

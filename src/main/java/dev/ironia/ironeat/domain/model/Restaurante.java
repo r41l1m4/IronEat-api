@@ -28,7 +28,7 @@ public class Restaurante {
     @Column(name = "taxa_frete", nullable = false)
     private BigDecimal taxaFrete;
 
-    @JsonIgnore
+//    @JsonIgnore
     @JsonIgnoreProperties("hibernateLazyInitializer") //utilizado para ignorar propriedades especificas em uma instância.
     @ManyToOne(fetch = FetchType.LAZY) //muda o fetch type de eager para lazy, ou seja, so faz a busca desses dados caso necessário.
     @JoinColumn(name = "cozinha_id", nullable = false) //se deixar sem essa linha, ele vai gerar o nome.
