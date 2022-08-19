@@ -14,41 +14,37 @@ import java.util.Optional;
 @AllArgsConstructor
 @Service
 public class CadastroCidadeService {
+
+    private static final String MSG_CIDADE_NAO_ENCONTRADA = "Não existe cadastro de estado com o código %d.";
     private CidadeRepository cidadeRepository;
-    private EstadoRepository estadoRepository;
+    private CadastroEstadoService cadastroEstadoService;
 
     public Cidade salvar(Cidade cidade) {
         Long estadoId = cidade.getEstado().getId();
-        Optional<Estado> estado = estadoRepository.findById(estadoId);
+        Estado estado = cadastroEstadoService.buscarOuFalhar(estadoId);
 
-        if(estado.isEmpty()) {
-            throw new EntidadeNaoEncontradaException(
-                    String.format(
-                            "Não existe cadastro de estado com o código %d.",
-                            estadoId
-                    )
-            );
-        }
-        cidade.setEstado(estado.get());
+        cidade.setEstado(estado);
         return cidadeRepository.save(cidade);
     }
 
     public void excluir(Long id) {
         try{
             cidadeRepository.deleteById(id);
-        }catch (IllegalArgumentException er){
+        }catch (IllegalArgumentException | EmptyResultDataAccessException er){
             throw new EntidadeNaoEncontradaException(
                     String.format(
-                            "Não existe um cadastro de cidade com o código %d.",
-                            id
-                    )
-            );
-        }catch (EmptyResultDataAccessException erd) {
-            throw new EntidadeNaoEncontradaException(
-                    String.format("Não existe um cadastro de cidade com o código %d.",
+                            MSG_CIDADE_NAO_ENCONTRADA,
                             id
                     )
             );
         }
+    }
+
+    public Cidade buscarOuFalhar(Long cidadeId) {
+        return cidadeRepository.findById(cidadeId)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException(
+                        String.format(MSG_CIDADE_NAO_ENCONTRADA,
+                                cidadeId
+                        )));
     }
 }
