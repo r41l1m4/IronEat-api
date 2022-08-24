@@ -1,6 +1,8 @@
 package dev.ironia.ironeat.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
+import dev.ironia.ironeat.domain.exception.NegocioException;
 import dev.ironia.ironeat.domain.model.Restaurante;
 import dev.ironia.ironeat.domain.repository.RestauranteRepository;
 import dev.ironia.ironeat.domain.service.CadastroRestauranteService;
@@ -34,7 +36,11 @@ public class RestauranteController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Restaurante salvar(@RequestBody Restaurante restaurante) {
-        return cadastroRestauranteService.salvar(restaurante);
+        try {
+            return cadastroRestauranteService.salvar(restaurante);
+        }catch(EntidadeNaoEncontradaException e) {
+            throw new NegocioException(e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
@@ -43,7 +49,11 @@ public class RestauranteController {
 
         BeanUtils.copyProperties(restaurante, restauranteAtual,
                     "id", "formasPagamento", "endereco", "dataCadastro");
-        return cadastroRestauranteService.salvar(restauranteAtual);
+        try {
+            return cadastroRestauranteService.salvar(restauranteAtual);
+        }catch(EntidadeNaoEncontradaException e) {
+            throw new NegocioException(e.getMessage());
+        }
     }
 
     @PatchMapping("/{id}")
