@@ -1,7 +1,7 @@
 package dev.ironia.ironeat.domain.service;
 
 import dev.ironia.ironeat.domain.exception.EntidadeEmUsoException;
-import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
+import dev.ironia.ironeat.domain.exception.EstadoNaoEncontradoException;
 import dev.ironia.ironeat.domain.model.Estado;
 import dev.ironia.ironeat.domain.repository.EstadoRepository;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Service
 public class CadastroEstadoService {
-    private static final String MSG_ESTADO_NAO_ENCONTRADO = "Não existe um cadastro de estado com o código %d.";
     private static final String MSG_ESTADO_EM_USO = "Estado de código %d não pode ser removido, pois está em uso";
     private EstadoRepository estadoRepository;
 
@@ -24,12 +23,7 @@ public class CadastroEstadoService {
         try {
             estadoRepository.deleteById(id);
         }catch (IllegalArgumentException | EmptyResultDataAccessException e) {
-            throw new EntidadeNaoEncontradaException(
-                    String.format(
-                            MSG_ESTADO_NAO_ENCONTRADO,
-                            id
-                    )
-            );
+            throw new EstadoNaoEncontradoException(id);
         } catch (DataIntegrityViolationException e) {
             throw new EntidadeEmUsoException(
                     String.format(MSG_ESTADO_EM_USO,
@@ -41,10 +35,7 @@ public class CadastroEstadoService {
 
     public Estado buscarOuFalhar(Long estadoId) {
         return estadoRepository.findById(estadoId)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException(
-                        String.format(MSG_ESTADO_NAO_ENCONTRADO,
-                                estadoId
-                        )));
+                .orElseThrow(() -> new EstadoNaoEncontradoException(estadoId));
     }
 
 }

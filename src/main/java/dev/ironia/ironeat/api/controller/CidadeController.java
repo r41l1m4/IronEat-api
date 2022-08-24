@@ -1,6 +1,7 @@
 package dev.ironia.ironeat.api.controller;
 
 import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
+import dev.ironia.ironeat.domain.exception.EstadoNaoEncontradoException;
 import dev.ironia.ironeat.domain.exception.NegocioException;
 import dev.ironia.ironeat.domain.model.Cidade;
 import dev.ironia.ironeat.domain.repository.CidadeRepository;
@@ -37,20 +38,20 @@ public class CidadeController {
     public Cidade salvar(@RequestBody Cidade cidade) {
         try {
             return cadastroCidadeService.salvar(cidade);
-        } catch(EntidadeNaoEncontradaException e) {
-            throw new NegocioException(e.getMessage());
+        } catch(EstadoNaoEncontradoException e) {
+            throw new NegocioException(e.getMessage(), e);
         }
     }
 
     @PutMapping("/{id}")
     public Cidade atualizar(@PathVariable Long id, @RequestBody Cidade cidade) {
-        Cidade cidadeAtual = cadastroCidadeService.buscarOuFalhar(id);
-
-        BeanUtils.copyProperties(cidade, cidadeAtual, "id");
         try {
+            Cidade cidadeAtual = cadastroCidadeService.buscarOuFalhar(id);
+            BeanUtils.copyProperties(cidade, cidadeAtual, "id");
+
             return cadastroCidadeService.salvar(cidadeAtual);
-        } catch(EntidadeNaoEncontradaException e) {
-            throw new NegocioException(e.getMessage());
+        } catch(EstadoNaoEncontradoException e) {
+            throw new NegocioException(e.getMessage(), e);
         }
     }
 

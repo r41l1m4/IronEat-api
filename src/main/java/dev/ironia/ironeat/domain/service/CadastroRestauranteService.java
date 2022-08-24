@@ -1,7 +1,7 @@
 package dev.ironia.ironeat.domain.service;
 
 import dev.ironia.ironeat.domain.exception.EntidadeEmUsoException;
-import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
+import dev.ironia.ironeat.domain.exception.RestauranteNaoEncontradoException;
 import dev.ironia.ironeat.domain.model.Cozinha;
 import dev.ironia.ironeat.domain.model.Restaurante;
 import dev.ironia.ironeat.domain.repository.RestauranteRepository;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Service
 public class CadastroRestauranteService {
-    private static final String MSG_RESTAURANTE_NAO_ENCONTRADO = "Não existe cadastro de restaurante com o código %d.";
     private static final String MSG_RESTAURANTE_EM_USO = "Nrestaurante com o código %d está em uso.";
     private RestauranteRepository restauranteRepository;
     private CadastroCozinhaService cadastroCozinhaService;
@@ -29,10 +28,7 @@ public class CadastroRestauranteService {
         try {
             restauranteRepository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntidadeNaoEncontradaException(
-                    String.format(MSG_RESTAURANTE_NAO_ENCONTRADO,
-                            id
-                    ));
+            throw new RestauranteNaoEncontradoException(id);
         } catch (DataIntegrityViolationException em) {
             throw new EntidadeEmUsoException(
                     String.format(MSG_RESTAURANTE_EM_USO,
@@ -44,10 +40,7 @@ public class CadastroRestauranteService {
 
     public Restaurante buscarOuFalhar(Long restauranteId) {
         return restauranteRepository.findById(restauranteId)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException(
-                        String.format(MSG_RESTAURANTE_NAO_ENCONTRADO,
-                                restauranteId
-                        )));
+                .orElseThrow(() -> new RestauranteNaoEncontradoException(restauranteId));
     }
 
 }
