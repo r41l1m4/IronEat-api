@@ -11,40 +11,62 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
-
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EntidadeNaoEncontradaException.class)
     public ResponseEntity<?> handleEntidadeNaoEncontradaException(EntidadeNaoEncontradaException e, WebRequest request) {
-        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+        HttpStatus httpStatus = HttpStatus.NOT_FOUND;
+        ErrorType errorType = ErrorType.ENTIDADE_NAO_ENCONTRADA;
+
+        ApiError error = createErrorBuilder(httpStatus, errorType, e.getMessage()).build();
+
+        return handleExceptionInternal(e, error, new HttpHeaders(), httpStatus, request);
     }
 
     @ExceptionHandler(EntidadeEmUsoException.class)
     public ResponseEntity<?> handleEntidadeEmUsoException(EntidadeEmUsoException e, WebRequest request) {
-        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.CONFLICT, request);
+        HttpStatus httpStatus = HttpStatus.CONFLICT;
+        ErrorType errorType = ErrorType.ENTIDADE_EM_USO;
+
+        ApiError error = createErrorBuilder(httpStatus, errorType, e.getMessage()).build();
+
+        return handleExceptionInternal(e, error, new HttpHeaders(), httpStatus, request);
     }
 
     @ExceptionHandler(NegocioException.class)
     public ResponseEntity<?> handleNegocioException(NegocioException e, WebRequest request) {
-        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        ErrorType errorType = ErrorType.NEGOCIO_EXCEPTION;
+
+        ApiError error = createErrorBuilder(httpStatus, errorType, e.getMessage()).build();
+
+        return handleExceptionInternal(e, error, new HttpHeaders(), httpStatus, request);
     }
 
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
         if(body == null) {
             body = ApiError.builder()
-                    .dateTime(LocalDateTime.now())
-                    .message(status.getReasonPhrase())
+                    .status(status.value())
+                    .title(status.getReasonPhrase())
                     .build();
         }else if(body instanceof String) {
             body = ApiError.builder()
-                    .dateTime(LocalDateTime.now())
-                    .message((String) body)
+                    .status(status.value())
+                    .title((String) body)
                     .build();
         }
 
         return super.handleExceptionInternal(ex, body, headers, status, request);
+    }
+
+    private ApiError.ApiErrorBuilder createErrorBuilder(HttpStatus status, ErrorType errorType, String detail){
+        return ApiError.builder()
+                .status(status.value())
+                .type(errorType.getUri())
+                .title(errorType.getTitle())
+                .detail(detail);
+
     }
 }
