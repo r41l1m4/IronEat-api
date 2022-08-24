@@ -1,20 +1,16 @@
 package dev.ironia.ironeat.api.controller;
 
-import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
 import dev.ironia.ironeat.domain.exception.EstadoNaoEncontradoException;
 import dev.ironia.ironeat.domain.exception.NegocioException;
 import dev.ironia.ironeat.domain.model.Cidade;
 import dev.ironia.ironeat.domain.repository.CidadeRepository;
-import dev.ironia.ironeat.domain.repository.EstadoRepository;
 import dev.ironia.ironeat.domain.service.CadastroCidadeService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -60,4 +56,5 @@ public class CidadeController {
     public void excluir(@PathVariable Long id) {
         cadastroCidadeService.excluir(id);
     }
+
 }
