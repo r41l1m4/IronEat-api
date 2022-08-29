@@ -1,7 +1,5 @@
 package dev.ironia.ironeat.api.controller;
 
-import dev.ironia.ironeat.domain.exception.EntidadeEmUsoException;
-import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
 import dev.ironia.ironeat.domain.model.Estado;
 import dev.ironia.ironeat.domain.repository.EstadoRepository;
 import dev.ironia.ironeat.domain.service.CadastroEstadoService;
@@ -9,11 +7,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -34,12 +31,12 @@ public class EstadoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Estado salvar(@RequestBody Estado estado) {
+    public Estado salvar(@RequestBody @Valid Estado estado) {
         return cadastroEstadoService.salvar(estado);
     }
 
     @PutMapping("/{id}")
-    public Estado atualizar(@PathVariable Long id, @RequestBody Estado estado) {
+    public Estado atualizar(@PathVariable Long id, @RequestBody @Valid Estado estado) {
         Estado estadoAtual = cadastroEstadoService.buscarOuFalhar(id);
 
         BeanUtils.copyProperties(estado, estadoAtual, "id");

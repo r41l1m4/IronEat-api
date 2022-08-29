@@ -2,12 +2,19 @@ package dev.ironia.ironeat.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.ironia.ironeat.Groups;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,15 +30,22 @@ public class Restaurante {
     private Long id;
 
     @Column(nullable = false)
+//    @NotEmpty
+    @NotBlank
     private String nome;
 
     @Column(name = "taxa_frete", nullable = false)
+    @NotNull
+    @DecimalMin("0")
     private BigDecimal taxaFrete;
 
 //    @JsonIgnore
     @JsonIgnoreProperties("hibernateLazyInitializer") //utilizado para ignorar propriedades especificas em uma instância.
     @ManyToOne(fetch = FetchType.LAZY) //muda o fetch type de eager para lazy, ou seja, so faz a busca desses dados caso necessário.
     @JoinColumn(name = "cozinha_id", nullable = false) //se deixar sem essa linha, ele vai gerar o nome.
+    @NotNull
+    @Valid
+    @ConvertGroup(from = Default.class, to = Groups.CozinhaId.class)
     private Cozinha cozinha;
 
     @JsonIgnore

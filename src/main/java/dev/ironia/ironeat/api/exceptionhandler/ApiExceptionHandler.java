@@ -10,6 +10,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.transaction.TransactionSystemException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -17,7 +19,10 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.persistence.RollbackException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -84,6 +89,28 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, error, headers, status, request);
     }
 
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        ErrorType errorType = ErrorType.DADOS_INVALIDOS;
+        String detail = "Um ou mais campos estão inválidos. Faça o preenchimento correto e tente novamente.";
+
+
+        List<ApiError.Field> fields = e.getBindingResult()
+                .getFieldErrors().stream()
+                .map(fieldError -> ApiError.Field.builder()
+                        .name(fieldError.getField())
+                        .userMessage(String.format("O campo %s está inválido. Faça o preenchimento correto e tente novamente.", fieldError.getField()))
+                        .build())
+                .collect(Collectors.toList());
+
+        ApiError error = createErrorBuilder(status, errorType, detail)
+                .userMessage(detail)
+                .fields(fields)
+                .build();
+
+        return handleExceptionInternal(e, error, headers, status, request);
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     private ResponseEntity<?> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e, WebRequest request) {
         String detail = String.format("O parâmetro de URL '%s' recebeu o valor '%s', que é um tipo inválido. " +
@@ -98,6 +125,53 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, error, new HttpHeaders(), status, request);
 
     }
+
+//    @ExceptionHandler(TransactionSystemException.class)
+//    private ResponseEntity<?> handleTransactionSystemException(TransactionSystemException e, WebRequest request) {
+//        Throwable rootCause = ExceptionUtils.getRootCause(e);
+//
+//        List<ApiError.Field> fields = Arrays.stream(rootCause.getStackTrace())
+//                .map(stackTraceElement -> ApiError.Field.builder()
+//                        .name(stackTraceElement.getFileName())
+//                        .userMessage(stackTraceElement.getMethodName())
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        String detail = String.format("O parâmetro de URL '%s'",
+//                rootCause.getLocalizedMessage());
+//        HttpStatus status = HttpStatus.BAD_REQUEST;
+//        ErrorType errorType = ErrorType.DADOS_INVALIDOS;
+//        ApiError error = createErrorBuilder(status, errorType, detail)
+//                .userMessage(e.getMostSpecificCause().getMessage())
+//                .fields(fields)
+//                .build();
+//
+//        return handleExceptionInternal(e, error, new HttpHeaders(), status, request);
+//
+//    }
+//    @ExceptionHandler(RollbackException.class)
+//    private ResponseEntity<?> handleRollbackException(RollbackException e, WebRequest request) {
+//        Throwable rootCause = ExceptionUtils.getRootCause(e);
+//
+//        List<ApiError.Field> fields = Arrays.stream(rootCause.getStackTrace())
+//                .map(stackTraceElement -> ApiError.Field.builder()
+//                        .name(stackTraceElement.getFileName())
+//                        .userMessage(stackTraceElement.getMethodName())
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        String detail = String.format("O parâmetro de URL '%s'",
+//                rootCause.getLocalizedMessage());
+//        HttpStatus status = HttpStatus.BAD_REQUEST;
+//        ErrorType errorType = ErrorType.DADOS_INVALIDOS;
+//        ApiError error = createErrorBuilder(status, errorType, detail)
+//                .userMessage(e.getLocalizedMessage())
+//                .fields(fields)
+//                .build();
+//
+//        return handleExceptionInternal(e, error, new HttpHeaders(), status, request);
+//
+//    }
 
     @ExceptionHandler(EntidadeNaoEncontradaException.class)
     public ResponseEntity<?> handleEntidadeNaoEncontradaException(EntidadeNaoEncontradaException e, WebRequest request) {
@@ -152,11 +226,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             body = ApiError.builder()
                     .status(status.value())
                     .title(status.getReasonPhrase())
+                    .timestamp(LocalDateTime.now())
                     .build();
         }else if(body instanceof String) {
             body = ApiError.builder()
                     .status(status.value())
                     .title((String) body)
+                    .timestamp(LocalDateTime.now())
                     .build();
         }
 
