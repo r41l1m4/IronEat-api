@@ -31,7 +31,7 @@ public class Restaurante {
 
     @Column(nullable = false)
 //    @NotEmpty
-    @NotBlank
+    @NotBlank(message = "Nome é obrigatório!")
     private String nome;
 
     @Column(name = "taxa_frete", nullable = false)

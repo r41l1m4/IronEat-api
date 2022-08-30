@@ -6,6 +6,8 @@ import dev.ironia.ironeat.domain.exception.EntidadeEmUsoException;
 import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
 import dev.ironia.ironeat.domain.exception.NegocioException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     public static final String MSG_ERRO_GENERICA_USUARIO_FINAL = "Ocorreu um erro inesperado no sistema. Tente novamente e se o " +
             "problema persistir, entre em contato como administrador do sistema.";
+
+    private MessageSource messageSource;
+
+    ApiExceptionHandler(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
@@ -97,10 +105,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
         List<ApiError.Field> fields = e.getBindingResult()
                 .getFieldErrors().stream()
-                .map(fieldError -> ApiError.Field.builder()
-                        .name(fieldError.getField())
-                        .userMessage(String.format("O campo %s está inválido. Faça o preenchimento correto e tente novamente.", fieldError.getField()))
-                        .build())
+                .map(fieldError -> {
+                    String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
+
+                    return ApiError.Field.builder()
+                            .name(fieldError.getField())
+                            .userMessage(message)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         ApiError error = createErrorBuilder(status, errorType, detail)
