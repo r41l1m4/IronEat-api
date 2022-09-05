@@ -2,7 +2,7 @@ package dev.ironia.ironeat.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import dev.ironia.ironeat.Groups;
+import dev.ironia.ironeat.core.validation.Groups;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

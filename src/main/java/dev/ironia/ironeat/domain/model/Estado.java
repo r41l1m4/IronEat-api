@@ -1,6 +1,6 @@
 package dev.ironia.ironeat.domain.model;
 
-import dev.ironia.ironeat.Groups;
+import dev.ironia.ironeat.core.validation.Groups;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

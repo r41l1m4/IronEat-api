@@ -1,4 +1,4 @@
-package dev.ironia.ironeat;
+package dev.ironia.ironeat.core.validation;
 
 public interface Groups {
 

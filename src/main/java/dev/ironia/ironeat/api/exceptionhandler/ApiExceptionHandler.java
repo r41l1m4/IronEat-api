@@ -2,6 +2,7 @@ package dev.ironia.ironeat.api.exceptionhandler;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
+import dev.ironia.ironeat.core.validation.ValidacaoException;
 import dev.ironia.ironeat.domain.exception.EntidadeEmUsoException;
 import dev.ironia.ironeat.domain.exception.EntidadeNaoEncontradaException;
 import dev.ironia.ironeat.domain.exception.NegocioException;
@@ -12,7 +13,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.transaction.TransactionSystemException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,9 +23,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import javax.persistence.RollbackException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -99,17 +99,40 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        ErrorType errorType = ErrorType.DADOS_INVALIDOS;
         String detail = "Um ou mais campos estão inválidos. Faça o preenchimento correto e tente novamente.";
 
+        BindingResult bindingResult = e.getBindingResult();
+        ApiError error = getApiError(bindingResult, status, ErrorType.DADOS_INVALIDOS, detail);
 
-        List<ApiError.Field> fields = e.getBindingResult()
-                .getFieldErrors().stream()
-                .map(fieldError -> {
-                    String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
+        return handleExceptionInternal(e, error, headers, status, request);
+    }
 
-                    return ApiError.Field.builder()
-                            .name(fieldError.getField())
+    @ExceptionHandler(ValidacaoException.class)
+    private ResponseEntity<?> handleValidacaoException(ValidacaoException e, WebRequest request) {
+        String detail = "Um ou mais campos estão inválidos. Faça o preenchimento correto e tente novamente.";
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        BindingResult bindingResult = e.getBindingResult();
+        ApiError error = getApiError(bindingResult, status, ErrorType.DADOS_INVALIDOS, detail);
+
+        return handleExceptionInternal(e, error, new HttpHeaders(), status, request);
+    }
+
+    private ApiError getApiError(BindingResult bindingResult, HttpStatus status, ErrorType errorType, String detail) {
+
+        List<ApiError.Object> fields = bindingResult
+                .getAllErrors().stream()
+                .map(objectError -> {
+                    String message = messageSource.getMessage(objectError, LocaleContextHolder.getLocale());
+
+                    String name = objectError.getObjectName();
+
+                    if(objectError instanceof FieldError) {
+                        name = ((FieldError) objectError).getField();
+                    }
+
+                    return ApiError.Object.builder()
+                            .name(name)
                             .userMessage(message)
                             .build();
                 })
@@ -117,10 +140,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
         ApiError error = createErrorBuilder(status, errorType, detail)
                 .userMessage(detail)
-                .fields(fields)
+                .objects(fields)
                 .build();
-
-        return handleExceptionInternal(e, error, headers, status, request);
+        return error;
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

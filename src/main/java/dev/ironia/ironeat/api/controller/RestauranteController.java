@@ -2,7 +2,7 @@ package dev.ironia.ironeat.api.controller;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.ironia.ironeat.Groups;
+import dev.ironia.ironeat.core.validation.ValidacaoException;
 import dev.ironia.ironeat.domain.exception.CozinhaNaoEncontradaException;
 import dev.ironia.ironeat.domain.exception.NegocioException;
 import dev.ironia.ironeat.domain.model.Restaurante;
@@ -11,11 +11,13 @@ import dev.ironia.ironeat.domain.service.CadastroRestauranteService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.SmartValidator;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +32,9 @@ import java.util.Map;
 public class RestauranteController {
     private RestauranteRepository restauranteRepository;
     private CadastroRestauranteService cadastroRestauranteService;
+
+    @Autowired
+    private SmartValidator validator;
 
     @GetMapping
     public List<Restaurante> listar() {
@@ -69,7 +74,18 @@ public class RestauranteController {
         Restaurante restauranteAtual = cadastroRestauranteService.buscarOuFalhar(id);
 
         merge(campos, restauranteAtual, request);
+        validate(restauranteAtual, "restaurante");
+
         return atualizar(id, restauranteAtual);
+    }
+
+    private void validate(Restaurante restauranteAtual, String objectName) {
+        BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(restauranteAtual, objectName);
+
+        validator.validate(restauranteAtual, bindingResult);
+        if(bindingResult.hasErrors()) {
+            throw new ValidacaoException(bindingResult);
+        }
     }
 
     private void merge(Map<String, Object> camposOrigem, Restaurante restauranteDestino, HttpServletRequest request) {

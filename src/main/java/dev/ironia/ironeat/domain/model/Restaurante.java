@@ -2,7 +2,10 @@ package dev.ironia.ironeat.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import dev.ironia.ironeat.Groups;
+import dev.ironia.ironeat.core.validation.Groups;
+import dev.ironia.ironeat.core.validation.Multiplo;
+import dev.ironia.ironeat.core.validation.TaxaFrete;
+import dev.ironia.ironeat.core.validation.ValorZeroIncluiDescricao;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,7 +13,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.Valid;
-import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.groups.ConvertGroup;
@@ -23,6 +25,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
+@ValorZeroIncluiDescricao(valorField = "taxaFrete", descricaoField = "nome", descricaoObrigatoria = "Frete Grátis")
 public class Restaurante {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +39,8 @@ public class Restaurante {
 
     @Column(name = "taxa_frete", nullable = false)
     @NotNull
-    @DecimalMin("0")
+    @Multiplo(numero = 5)
+    @TaxaFrete
     private BigDecimal taxaFrete;
 
 //    @JsonIgnore
