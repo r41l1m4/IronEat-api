@@ -3,6 +3,7 @@ package dev.ironia.ironeat;
 import dev.ironia.ironeat.domain.model.Cozinha;
 import dev.ironia.ironeat.domain.repository.CozinhaRepository;
 import dev.ironia.ironeat.util.DatabaseCleaner;
+import dev.ironia.ironeat.util.ResourceUtils;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.hamcrest.Matchers;
@@ -20,6 +21,7 @@ import static io.restassured.RestAssured.*;
 //###########
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CadastroCozinhaIT {
+    private final int COZINHA_INEXISTENTE = 1500;
 
     @LocalServerPort
     private int port;
@@ -30,6 +32,8 @@ class CadastroCozinhaIT {
     @Autowired
     private CozinhaRepository cozinhaRepository;
 
+    private Long numCozinhas;
+
     @BeforeEach
     public void setUp() {
         enableLoggingOfRequestAndResponseIfValidationFails();
@@ -38,6 +42,7 @@ class CadastroCozinhaIT {
 
         databaseCleaner.clearTables();
         prepararDados();
+        numCozinhas = cozinhaRepository.count();
     }
 
     @Test
@@ -51,20 +56,20 @@ class CadastroCozinhaIT {
     }
 
     @Test
-    public void deveConter3Cozinhas_QuandoConsultarCozinhas() {
+    public void deveConterNCozinhas_QuandoConsultarCozinhas() {
         given()
             .accept(ContentType.JSON)
         .when()
             .get()
         .then()
-            .body("", Matchers.hasSize(3));
+            .body("", Matchers.hasSize(numCozinhas.intValue()));
 //            .body("nome", Matchers.hasItems("Indiana", "Tailandesa"))
     }
 
     @Test
     public void deveRetornarStatus201_QuandoCadastrarCozinha() {
         given()
-            .body("{ \"nome\": \"Chinesa\" }")
+            .body(ResourceUtils.getContentFromResource("JSON/cozinha_cadastro_body.json"))
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
         .when()
@@ -87,7 +92,7 @@ class CadastroCozinhaIT {
     @Test
     public void deveRetonarRespostaEStatus404_QuandoConsultarCozinhaInexistente() {
         given()
-            .pathParam("cozinhaId", 4)
+            .pathParam("cozinhaId", COZINHA_INEXISTENTE)
             .accept(ContentType.JSON)
         .when()
             .get("/{cozinhaId}")
@@ -104,8 +109,8 @@ class CadastroCozinhaIT {
         cozinha2.setNome("Brasileira");
         cozinhaRepository.save(cozinha2);
 
-        Cozinha cozinha3 = new Cozinha();
-        cozinha3.setNome("Americana");
-        cozinhaRepository.save(cozinha3);
+        Cozinha cozinhaAmericana = new Cozinha();
+        cozinhaAmericana.setNome("Americana");
+        cozinhaRepository.save(cozinhaAmericana);
     }
 }
