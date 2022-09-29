@@ -1,7 +1,5 @@
 package dev.ironia.ironeat.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.ironia.ironeat.core.validation.Groups;
 import dev.ironia.ironeat.core.validation.Multiplo;
 import dev.ironia.ironeat.core.validation.TaxaFrete;
@@ -26,7 +24,7 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @ValorZeroIncluiDescricao(valorField = "taxaFrete", descricaoField = "nome", descricaoObrigatoria = "Frete Grátis")
-public class Restaurante {
+public class Restaurante{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
@@ -43,37 +41,30 @@ public class Restaurante {
     @TaxaFrete
     private BigDecimal taxaFrete;
 
-//    @JsonIgnore
-    @JsonIgnoreProperties("hibernateLazyInitializer") //utilizado para ignorar propriedades especificas em uma instância.
-    @ManyToOne(fetch = FetchType.LAZY) //muda o fetch type de eager para lazy, ou seja, so faz a busca desses dados caso necessário.
+    @ManyToOne() //muda o fetch type de eager para lazy, ou seja, so faz a busca desses dados caso necessário.
     @JoinColumn(name = "cozinha_id", nullable = false) //se deixar sem essa linha, ele vai gerar o nome.
     @NotNull
     @Valid
     @ConvertGroup(from = Default.class, to = Groups.CozinhaId.class)
     private Cozinha cozinha;
 
-    @JsonIgnore
     @Embedded
     private Endereco endereco;
 
-    @JsonIgnore
     @CreationTimestamp
     @Column(nullable = false, columnDefinition = "datetime")
     private LocalDateTime dataCadastro;
 
-    @JsonIgnore
     @UpdateTimestamp
     @Column(nullable = false, columnDefinition = "datetime")
     private LocalDateTime dataAtualizacao;
 
-    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "restaurante_forma_pagamento",
             joinColumns = @JoinColumn(name = "restaurante_id"),
             inverseJoinColumns = @JoinColumn(name = "forma_pagamento_id"))
     private List<FormaPagamento> formasPagamento = new ArrayList<>();
 
-    @JsonIgnore
     @OneToMany(mappedBy = "restaurante")
     private List<Produto> produtos = new ArrayList<>();
 }

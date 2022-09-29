@@ -1,6 +1,5 @@
 package dev.ironia.ironeat.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import dev.ironia.ironeat.core.validation.Groups;
 import lombok.Data;
@@ -29,7 +28,6 @@ public class Cozinha {
     @NotBlank
     private String nome;
 
-    @JsonIgnore // faz com que o jackson não serialize esse atributo no json
     @OneToMany(mappedBy = "cozinha")
     private List<Restaurante> restaurantes = new ArrayList<>();
 }
