@@ -3,7 +3,6 @@ package dev.ironia.ironeat.infrastructure.repository;
 import dev.ironia.ironeat.domain.model.Restaurante;
 import dev.ironia.ironeat.domain.repository.RestauranteRepository;
 import dev.ironia.ironeat.domain.repository.RestauranteRepositoryQueries;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Repository;
@@ -18,7 +17,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static dev.ironia.ironeat.infrastructure.repository.spec.RestauranteSpecFactory.comFreteGratis;

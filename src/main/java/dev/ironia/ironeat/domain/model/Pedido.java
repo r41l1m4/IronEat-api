@@ -6,7 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Entity
@@ -30,16 +30,16 @@ public class Pedido {
 
     @Column(nullable = false, columnDefinition = "datetime")
     @CreationTimestamp
-    private LocalDateTime dataCriacao;
+    private OffsetDateTime dataCriacao;
 
     @Column(name = "data_confirmacao", columnDefinition = "datetime")
-    private LocalDateTime dataConfirmacao;
+    private OffsetDateTime dataConfirmacao;
 
     @Column(name = "data_cancelamento", columnDefinition = "datetime")
-    private LocalDateTime dataCancelamento;
+    private OffsetDateTime dataCancelamento;
 
     @Column(name = "data_entrega", columnDefinition = "datetime")
-    private LocalDateTime dataEntrega;
+    private OffsetDateTime dataEntrega;
 
     @OneToMany(mappedBy = "pedido")
     private List<ItemPedido> itemsPedido;
