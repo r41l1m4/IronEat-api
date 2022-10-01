@@ -48,21 +48,21 @@ public class RestauranteController {
 
     @GetMapping
     public List<RestauranteOutputDTO> listar() {
-        return RestauranteDTOAssembler.toCollectionModel(restauranteRepository.findAll());
+        return restauranteAssembler.toCollectionModel(restauranteRepository.findAll());
     }
 
     @GetMapping("/{restauranteId}")
     public RestauranteOutputDTO buscar(@PathVariable Long restauranteId) {
         Restaurante restaurante = cadastroRestauranteService.buscarOuFalhar(restauranteId);
 
-        return RestauranteDTOAssembler.toModel(restaurante);
+        return restauranteAssembler.toModel(restaurante);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RestauranteOutputDTO salvar(@RequestBody @Valid RestauranteInputDTO restauranteInput) {
         try {
-            return RestauranteDTOAssembler.toModel(cadastroRestauranteService.salvar(RestauranteInputDTODisassembler.fromModel(restauranteInput)));
+            return restauranteAssembler.toModel(cadastroRestauranteService.salvar(restauranteDisassembler.fromModel(restauranteInput)));
         }catch(CozinhaNaoEncontradaException e) {
             throw new NegocioException(e.getMessage());
         }
@@ -70,13 +70,13 @@ public class RestauranteController {
 
     @PutMapping("/{id}")
     public RestauranteOutputDTO atualizar(@PathVariable Long id, @RequestBody @Valid RestauranteInputDTO restauranteInputDTO) {
-        Restaurante restaurante = RestauranteInputDTODisassembler.fromModel(restauranteInputDTO);
+        Restaurante restaurante = restauranteDisassembler.fromModel(restauranteInputDTO);
         Restaurante restauranteAtual = cadastroRestauranteService.buscarOuFalhar(id);
 
         BeanUtils.copyProperties(restaurante, restauranteAtual,
                     "id", "formasPagamento", "endereco", "dataCadastro");
         try {
-            return RestauranteDTOAssembler.toModel(cadastroRestauranteService.salvar(restauranteAtual));
+            return restauranteAssembler.toModel(cadastroRestauranteService.salvar(restauranteAtual));
         }catch(CozinhaNaoEncontradaException e) {
             throw new NegocioException(e.getMessage(), e);
         }
@@ -88,7 +88,7 @@ public class RestauranteController {
 
         merge(campos, restauranteAtual, request);
         validate(restauranteAtual, "restaurante");
-        RestauranteInputDTO restauranteInputDTO = RestauranteInputDTODisassembler.fromOutputDTOToInputDTO(RestauranteDTOAssembler.toModel(restauranteAtual));
+        RestauranteInputDTO restauranteInputDTO = restauranteDisassembler.fromOutputDTOToInputDTO(restauranteAssembler.toModel(restauranteAtual));
         return atualizar(id, restauranteInputDTO);
     }
 
