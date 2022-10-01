@@ -32,20 +32,19 @@ public class Restaurante{
 
     @Column(nullable = false)
 //    @NotEmpty
-    @NotBlank(message = "Nome é obrigatório!")
+//    @NotBlank(message = "Nome é obrigatório!")
     private String nome;
 
     @Column(name = "taxa_frete", nullable = false)
-    @NotNull
-    @Multiplo(numero = 5)
-    @TaxaFrete
+//    @NotNull
+//    @TaxaFrete
     private BigDecimal taxaFrete;
 
     @ManyToOne() //muda o fetch type de eager para lazy, ou seja, so faz a busca desses dados caso necessário.
     @JoinColumn(name = "cozinha_id", nullable = false) //se deixar sem essa linha, ele vai gerar o nome.
-    @NotNull
-    @Valid
-    @ConvertGroup(from = Default.class, to = Groups.CozinhaId.class)
+//    @NotNull
+//    @Valid
+//    @ConvertGroup(from = Default.class, to = Groups.CozinhaId.class)
     private Cozinha cozinha;
 
     @Embedded
