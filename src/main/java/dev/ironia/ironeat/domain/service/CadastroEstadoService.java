@@ -25,6 +25,7 @@ public class CadastroEstadoService {
     public void excluir(Long id) {
         try {
             estadoRepository.deleteById(id);
+            estadoRepository.flush();
         }catch (IllegalArgumentException | EmptyResultDataAccessException e) {
             throw new EstadoNaoEncontradoException(id);
         } catch (DataIntegrityViolationException e) {
